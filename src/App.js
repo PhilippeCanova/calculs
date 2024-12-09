@@ -14,13 +14,14 @@ function pick_random_calcul_type(calcul_list) {
 function App() {
   const [selected, setSelected] = useState(Object.keys(TYPES_CALCUL_AVAILABLES));
   const [calcul, setCalcul] = useState(pick_random_calcul_type(selected))
-  const [response, setResponse] = useState(15278);
+  const [response, setResponse] = useState('');
   const [isOk, setIsOk] = useState();
   
   const {pathname} = useLocation()
 
   const handleChange = (event) => {
     const temp = selected.filter(el => el !== event.target.name)
+    if (temp.length === 0) return 
     if (event.target.checked) setSelected([...temp, event.target.name ]);
     else setSelected(temp)
   };

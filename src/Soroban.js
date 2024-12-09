@@ -63,7 +63,8 @@ SorobanUnaires.propTypes = {
 
 
 
-function SorobanColumn({onChange, value}) {
+function SorobanColumn({onChange, value, separator}) {
+
   const handleChangeUnaire = (unaire) => {
     const new_value = value
     if (new_value < 5) onChange(unaire) 
@@ -75,9 +76,10 @@ function SorobanColumn({onChange, value}) {
     else onChange(new_value - 5)
   }
 
-
+  let leftborder = ""
+  if (separator != undefined) leftborder = "0.5em solid " + separator
   return (
-    <Box sx={{borderRight:"0.5em solid brown", display:"flex", flexDirection:"column"}} >
+    <Box sx={{borderRight:"0.5em solid brown", display:"flex", flexDirection:"column", borderLeft:leftborder}} >
       <SorobanQuinaire value={value < 5 ? 0 : 5} onChange={handleChangeQuinaire}/>
       <SorobanUnaires value={value>4 ? value-5 : value} onChange={handleChangeUnaire}/>
       <Typography>{value}</Typography>
@@ -86,43 +88,39 @@ function SorobanColumn({onChange, value}) {
 }
 SorobanColumn.propTypes = {
   value: PropTypes.oneOfType([PropTypes.number,PropTypes.string]),
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  separator: PropTypes.string
 };
 
 
-function get_decimal(value, decimale){
-  let dessus = Math.floor(value / Math.pow(10, decimale+1))*Math.pow(10, decimale+1)
-  let restant = value - dessus
-
-  let dessous = Math.floor(restant / Math.pow(10, decimale-1))
-
-  
-  let temp = restant - dessous
-  console.debug(value, decimale, dessus, dessous, temp)
-  return value
+function get_rank_number(value, rang){
+  const formated = Number.parseFloat(value).toFixed(2).toString()
+  let fin = formated.length - (3+rang)
+  const car = formated.charAt(fin)
+  if (car === '') return 0
+  return parseInt(car)
 } 
 
 function Soroban({onChange, value}) {
   let intValue = value
   if (value === '') intValue = 0
   
-  const handeChange = (new_decimale, puissance) => {
-
-    onChange(new_decimale)
+  const handeChange = (new_decimale, rang) => {
+    const formated = Number.parseFloat(intValue).toFixed(2).toString().padStart(15, '0')
+    let fin = formated.length - (3+rang)
+    let new_string = formated.substring(0,fin) + new_decimale + formated.substring(fin+1)
+    onChange(parseFloat(new_string))
   }
 
-  
-
+  let soroban_colunm = []
+  for (let i=8; i>-3; i--) {
+    let separator
+    if (i===-1) separator = "red"
+    if (i!=0) soroban_colunm.push(<SorobanColumn key={i} separator={separator} value={get_rank_number(intValue,i)} onChange={(val) => handeChange(val, i)}/>)
+  }
   return (
     <Box sx={{display: "flex", flexDirection:"row", border:"0.5em solid brown"}}>
-    <SorobanColumn value={get_decimal(intValue,6)} onChange={(val) => handeChange(val, 6)}/>
-    <SorobanColumn value={get_decimal(intValue,5)} onChange={(val) => handeChange(val, 5)}/>
-    <SorobanColumn value={get_decimal(intValue,4)} onChange={(val) => handeChange(val, 4)}/>
-    <SorobanColumn value={get_decimal(intValue,3)} onChange={(val) => handeChange(val, 3)}/>
-    <SorobanColumn value={get_decimal(intValue,2)}  onChange={(val) => handeChange(val, 2)}/>
-    <SorobanColumn value={get_decimal(intValue,1)} onChange={(val) => handeChange(val, 1)}/>
-    <SorobanColumn value={get_decimal(intValue,0)} onChange={(val) => handeChange(val, 0)} />
-    
+    {soroban_colunm}
     </Box>
   
   );
